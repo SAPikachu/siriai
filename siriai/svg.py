@@ -455,41 +455,15 @@ def svg_to_ass_path_iter(svg_file_name, scale):
         path = convert_path(raw_path, matrix)
         yield { "color": color, "path": path }
 
-def svg_to_ass(svg_file_name,
-               convert_scale=128,
-               layer=0,
-               start_time="0:00:00.00",
-               end_time="1:00:00.00",
-               style="Default",
-               pos="0,0",
-               ass_drawing_scale=8,
-               text_prefix="",
-               text_suffix="",
-               with_ass_header=False,
-              ):
-    if with_ass_header:
-        print(ASS_HEADER.strip())
 
-    for path_info in svg_to_ass_path_iter(svg_file_name, convert_scale):
+def build_lines(file, convert_scale=128, ass_drawing_scale=8, **kwargs):
+    for path_info in svg_to_ass_path_iter(file, convert_scale):
         color = path_info["color"]
         path = path_info["path"]
-        print(r"Dialogue: {layer},{start_time},{end_time},{style},,0000,0000,0000,,{text_prefix}{{\pos({pos})\an7\p{ass_drawing_scale}\bord0\shad0\alpha&H0\1c&H{color}}}{path}{{\p0}}{text_suffix}".format(**locals()))
+        yield r"{{\p{ass_drawing_scale}\1c&H{color}}}{path}{{\p0}}" \
+            .format(**locals())
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("svg_file_name")
+
+def build_arg_parser(parser):
     parser.add_argument("--convert-scale", type=float, default=128)
-    parser.add_argument("--layer", type=int, default=0)
-    parser.add_argument("--start-time", default="0:00:00.00")
-    parser.add_argument("--end-time", default="1:00:00.00")
-    parser.add_argument("--style", default="Default")
-    parser.add_argument("--pos", default="0,0")
     parser.add_argument("--ass-drawing-scale", type=int, default=8)
-    parser.add_argument("--text-prefix", default="")
-    parser.add_argument("--text-suffix", default="")
-    parser.add_argument("--with-ass-header", action="store_true")
-    svg_to_ass(**vars(parser.parse_args()))
-
-if __name__ == "__main__":
-    main()
-
