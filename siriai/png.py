@@ -75,7 +75,7 @@ def to_ass_time(value):
 def prepare_ass_data(file, pos):
     reader = png.Reader(file)
     width, height, pixels, metadata = reader.asRGBA8()
-    org_x, org_y = [int(x) for x in pos.split(",")]
+    org_x, org_y = pos
 
     for row in range(height):
         raw_pixels = next(pixels)
@@ -105,62 +105,25 @@ def prepare_ass_data(file, pos):
             yield (org_x + origin_column, org_y + row), blocks
 
 
-def output_ass(ass_data, layer, start_time, end_time, pos,
-               text_prefix, text_suffix,):
+def build_ass_text(blocks):
+    text = ""
+    for block_width, block_color in blocks:
+        args = list(block_color + (block_width,))
+        # Convert regular alpha to ASS alpha (actually transparency)
+        args[3] = 0xff - args[3]
+        text += (
+            r"{{\1c&H{2:02X}{1:02X}{0:02X}\alpha&H{3:X}\p1}}"
+            r"m 0 0 l 0 1 {4} 1 {4} 0{{\p0}}"
+        ).format(*args)
+
+    return text
+
+
+def build_lines(file, pos, **kwargs):
+    ass_data = prepare_ass_data(file, pos)
     for (row_x, row_y), blocks in ass_data:
-        row_pos = "{},{}".format(row_x, row_y)
-        print((
-            r"Dialogue: {layer},{start_time},{end_time},Default,,"
-            r"0000,0000,0000,,{text_prefix}{{\an7\bord0\shad0\fnArial\fs20"
-            r"\pos({row_pos})}}"
-        ).format(**locals()), end="")
-        for block_width, block_color in blocks:
-            args = list(block_color + (block_width,))
-            # Convert regular alpha to ASS alpha (actually transparency)
-            args[3] = 0xff - args[3]
-            print((
-                r"{{\1c&H{2:02X}{1:02X}{0:02X}\alpha&H{3:X}\p1}}"
-                r"m 0 0 l 0 1 {4} 1 {4} 0{{\p0}}"
-            ).format(*args), end="")
-
-        print(text_suffix)
+        yield build_ass_text(blocks), {"pos": (row_x, row_y)}
 
 
-def png_to_ass(name,
-               layer=0,
-               start_time=timedelta(),
-               end_time=timedelta(hours=1),
-               pos="0,0",
-               text_prefix="",
-               text_suffix="",
-               with_ass_header=False,
-              ):
-    if with_ass_header:
-        print(ASS_HEADER.strip())
-
-    ass_data = prepare_ass_data(name, pos)
-
-    start_time_ass = to_ass_time(start_time)
-    end_time_ass = to_ass_time(end_time)
-    output_ass(
-        ass_data,
-        layer, start_time_ass, end_time_ass, pos, text_prefix, text_suffix,
-    )
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("name")
-    parser.add_argument("--layer", type=int, default=0)
-    parser.add_argument("--start-time",
-                        type=from_ass_time, default="0:00:00.00")
-    parser.add_argument("--end-time",
-                        type=from_ass_time, default="1:00:00.00")
-    parser.add_argument("--pos", default="0,0")
-    parser.add_argument("--text-prefix", default="")
-    parser.add_argument("--text-suffix", default="")
-    parser.add_argument("--with-ass-header", action="store_true")
-    png_to_ass(**vars(parser.parse_args()))
-
-if __name__ == "__main__":
-    main()
+def build_arg_parser(parser):
+    pass
