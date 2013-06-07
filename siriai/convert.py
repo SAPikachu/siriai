@@ -91,27 +91,34 @@ def main():
     parser.add_argument("--with-ass-header",
                         type=vec2, nargs="?", const="1920,1080")
 
-    subparsers = parser.add_subparsers(dest="file_type")
     converters = {
         "svg": svg,
         "png": png,
     }
+    subparsers = parser.add_subparsers(dest="file_type")
     for file_type, converter in converters.items():
         subparser = subparsers.add_parser(file_type)
-        converter.build_arg_parser(subparser)
+        subparser.set_defaults(converter=converter)
+        group = parser.add_argument_group(
+            "format specific arguments - " + file_type,
+        )
+        converter.build_arg_parser(group)
 
-    sentinel_args, _ = parser.parse_known_args()
-    if sentinel_args.file and not sentinel_args.file_type:
-        _, ext = os.path.splitext(sentinel_args.file)
+    args, remaining = parser.parse_known_args()
+    if args.file and not args.file_type:
+        _, ext = os.path.splitext(args.file)
         ext = ext.lstrip(".")
         if ext not in converters:
             print("Error: Unknown file type")
             sys.exit(1)
 
-        parser.set_defaults(file_type=ext)
+        args.file_type = ext
+    
+    parser.set_defaults(**vars(args))
+    remaining = [args.file, args.file_type] + remaining
+    args = parser.parse_args(remaining, namespace=args)
 
-    args = parser.parse_args()
-    convert(converter=converters[args.file_type], **vars(args))
+    convert(**vars(args))
 
 
 if __name__ == '__main__':
