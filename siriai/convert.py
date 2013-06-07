@@ -24,7 +24,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 DIALOGUE_TEMPLATE = (
     r"Dialogue: {layer},{start_time},{end_time},Default,,"
     r"0000,0000,0000,{effect},{text_prefix}{{\an7\bord0\shad0\fnArial\fs20"
-    r"\alpha&H0\pos({pos_text})}}{text}{text_suffix}"
+    r"\alpha&H0\pos({pos})}}{text}{text_suffix}"
 )
 
 
@@ -67,7 +67,9 @@ def convert(converter, with_ass_header, **kwargs):
 
         line_args = dict(kwargs, **extra_args)
         line_args.update({
-            "pos_text": "{},{}".format(*line_args["pos"]),
+            "pos": "{},{}".format(*line_args["pos"]),
+            "start_time": to_ass_time(line_args["start_time"]),
+            "end_time": to_ass_time(line_args["end_time"]),
             "text": text,
         })
         print(DIALOGUE_TEMPLATE.format(**line_args))
