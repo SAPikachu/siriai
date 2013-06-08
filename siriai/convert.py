@@ -118,7 +118,16 @@ def main():
     remaining = [args.file, args.file_type] + remaining
     args = parser.parse_args(remaining, namespace=args)
 
-    convert(**vars(args))
+    if os.getenv("SIRIAI_PROFILE", False):
+        import cProfile
+        import pstats
+        p = cProfile.Profile()
+        p.runcall(convert, **vars(args))
+        stats = pstats.Stats(p, stream=sys.stderr)
+        stats.sort_stats("cumtime")
+        stats.print_stats()
+    else:
+        convert(**vars(args))
 
 
 if __name__ == '__main__':
