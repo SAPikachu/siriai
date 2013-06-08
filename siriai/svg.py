@@ -277,7 +277,7 @@ def convert_path(path, matrix):
 
     current_coord = Coord(0, 0)
     is_relative = False
-    ret = ""
+    ret = []
     last_command = []
 
     def set_current_coord(coord):
@@ -288,17 +288,15 @@ def convert_path(path, matrix):
         current_coord = coord
 
     def append_command(command):
-        nonlocal ret
-        ret += " " + command
+        ret.append(command)
         last_command = [command]
 
     def append_coord(coord):
-        nonlocal ret
         if is_relative:
             coord += current_coord
 
         last_command.append(coord)
-        ret += " " + matrix.transform_coord(coord).to_ass_coord()
+        ret.append(matrix.transform_coord(coord).to_ass_coord())
 
     def command_m():
         coord = Coord.from_token_data(tokenizer.next_token("coord"))
@@ -403,7 +401,7 @@ def convert_path(path, matrix):
 
         commands[command]()
 
-    return ret
+    return " ".join(ret)
         
 def node_parents(node, and_self=False):
     if not and_self:
