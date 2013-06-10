@@ -15,14 +15,14 @@ PlayResY: {res_y}
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,20,&H00FFFFFF,&H0000FFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,0
+Style: Image,Arial,20,&H00FFFFFF,&H0000FFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
 
 DIALOGUE_TEMPLATE = (
-    r"Dialogue: {layer},{start_time},{end_time},Default,,"
+    r"Dialogue: {layer},{start_time},{end_time},{style},,"
     r"0000,0000,0000,{effect},{text_prefix}{{\an7\bord0\shad0\fnArial\fs20"
     r"\alpha&H0\pos({pos})}}{text}{text_suffix}"
 )
@@ -84,7 +84,7 @@ def main():
     parser.add_argument("--end-time",
                         type=from_ass_time, default="1:00:00.00")
     parser.add_argument("--pos", type=vec2, default="0,0")
-    parser.add_argument("--style", default="Default")
+    parser.add_argument("--style", default="Image")
     parser.add_argument("--effect", default="")
     parser.add_argument("--text-prefix", default="")
     parser.add_argument("--text-suffix", default="")
